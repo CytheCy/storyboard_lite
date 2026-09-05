@@ -32,10 +32,7 @@ svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width:
 .settings-grid { display: grid; grid-template-columns: 1.05fr .95fr; gap: 18px; margin-top: 38px; align-items: start; }
 .panel { background: rgba(251,250,247,.92); border: 1px solid var(--line); border-radius: 20px; padding: 25px; box-shadow: 0 7px 25px rgba(50, 47, 40, .04); }
 .source-panel { grid-row: span 2; }
-.panel-heading { display: flex; align-items: flex-start; gap: 14px; padding-bottom: 23px; border-bottom: 1px solid #e5e2db; margin-bottom: 23px; }
-.step { flex: 0 0 30px; height: 30px; display: grid; place-items: center; border: 1px solid #d6d4cc; border-radius: 9px; color: #81827b; font-size: 11px; font-weight: 700; }
 h2 { font-size: 16px; font-weight: 700; margin: 1px 0 5px; letter-spacing: -.02em; }
-.panel-heading p { color: #85867f; font-size: 12.5px; margin: 0; line-height: 1.45; }
 .field + .field { margin-top: 21px; }
 .field > label { display: block; font-size: 11px; font-weight: 700; margin: 0 0 8px; text-transform: uppercase; letter-spacing: .08em; color: #777970; }
 .format-field { margin-top: 21px; }
@@ -157,9 +154,8 @@ h2 { font-size: 16px; font-weight: 700; margin: 1px 0 5px; letter-spacing: -.02e
 [data-theme="dark"] .theme-option.active { background: #555158; color: #f5f3f5; box-shadow: 0 2px 8px rgba(0,0,0,.22); }
 [data-theme="dark"] .moon-icon::after { background: #555158; }
 [data-theme="dark"] .panel, [data-theme="dark"] .library-card { background: rgba(43,42,45,.94); box-shadow: 0 8px 28px rgba(0,0,0,.12); }
-[data-theme="dark"] .panel-heading, [data-theme="dark"] .card-number, [data-theme="dark"] .key-path { border-color: #4b494d; }
+[data-theme="dark"] .card-number, [data-theme="dark"] .key-path { border-color: #4b494d; }
 [data-theme="dark"] .card-number { background: rgba(36,35,38,.72); }
-[data-theme="dark"] .step { border-color: #555359; color: #aaa8ad; }
 [data-theme="dark"] .path-control, [data-theme="dark"] .library-card textarea { background: #252427; border-color: #555258; color: #e8e7e3; }
 [data-theme="dark"] .negative-label { color: #c29b8b; }
 [data-theme="dark"] .library-card textarea.negative-prompt { background: #2b2626; border-color: #5c4c49; }

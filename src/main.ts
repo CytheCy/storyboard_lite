@@ -143,14 +143,13 @@ function renderSettings() {
     </div>
     <section class="settings-grid">
       <article class="panel source-panel">
-        <div class="panel-heading"><span class="step">A</span><div><h2>Source & output</h2><p>Point Frameforge to your prose and a home for the finished frames.</p></div></div>
         ${pathField("prosePath", "Prose file", "Select a .txt or .md file", "file", "file")}
         ${pathField("outputPath", "Storyboard folder", "Choose where generated images will be saved", "folder", "directory")}
         ${pathField("promptPath", "Prompt folder", "Choose where generated prompts will be saved", "folder", "directory")}
         ${renderImageFormat()}
       </article>
-      ${renderModelPanel("prompt", "Prompt writer", "Uses the active Environment in every scene prompt.", state.promptModels, state.selectedPromptModel)}
-      ${renderModelPanel("image", "Image maker", "Renders each approved visual prompt.", state.imageModels, state.selectedImageModel)}
+      ${renderModelPanel("prompt", state.promptModels, state.selectedPromptModel)}
+      ${renderModelPanel("image", state.imageModels, state.selectedImageModel)}
     </section>
   </div>`;
 }
@@ -170,9 +169,8 @@ function renderImageFormat() {
   </div>`;
 }
 
-function renderModelPanel(kind: ModelKind, title: string, description: string, models: Model[], selected: string) {
+function renderModelPanel(kind: ModelKind, models: Model[], selected: string) {
   return `<article class="panel model-panel">
-    <div class="panel-heading"><span class="step">${kind === "prompt" ? "B" : "C"}</span><div><h2>${title}</h2><p>${description}</p></div></div>
     <div class="model-list">
       ${models.map(model => `<div class="model-row ${selected === model.id ? "selected" : ""}">
         <button class="model-choice" role="radio" aria-checked="${selected === model.id}" data-select-model="${model.id}" data-kind="${kind}">
