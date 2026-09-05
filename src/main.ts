@@ -108,7 +108,7 @@ function render() {
           ${tabButton("environment", "Environment", "02")}
           ${tabButton("style", "Style", "03")}
         </nav>
-        <span class="status-pill"><i></i> Local draft</span>
+        <span aria-hidden="true"></span>
       </header>
       <main>${renderPage()}</main>
       ${renderFooter()}
