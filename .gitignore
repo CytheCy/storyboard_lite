@@ -1,0 +1,15 @@
+node_modules/
+dist/
+
+# Local application and editor state
+.env
+.env.*
+*.key
+*.log
+.DS_Store
+.vscode/
+.idea/
+
+# Test and build artifacts
+coverage/
+*.tsbuildinfo
