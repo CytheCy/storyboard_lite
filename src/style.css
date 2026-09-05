@@ -16,10 +16,8 @@ svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width:
 .tab.active::after { transform: scaleX(1); }
 .page { width: min(1180px, calc(100% - 72px)); margin: 0 auto; padding: 56px 0 70px; }
 .page-intro { max-width: 680px; }
-.kicker { color: #779126 !important; font-size: 11px !important; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; margin: 0 0 12px !important; }
-.page-intro h1 { font-size: clamp(34px, 4vw, 53px); font-weight: 800; line-height: 1.04; letter-spacing: -.055em; margin: 0; color: #272527; }
 .page-intro > p:last-child { color: var(--muted); font-size: 16px; line-height: 1.55; max-width: 610px; margin: 17px 0 0; }
-.page-intro.environment-note > p { margin-top: 0; }
+.page-intro.library-note > p { margin-top: 0; }
 .settings-header { display: flex; align-items: end; justify-content: flex-end; gap: 32px; }
 .theme-picker { flex: 0 0 auto; }
 .theme-picker > span { display: block; color: #85867f; font-size: 9px; font-weight: 700; letter-spacing: .11em; text-transform: uppercase; margin: 0 0 7px 3px; }
@@ -148,7 +146,6 @@ h2 { font-size: 16px; font-weight: 700; margin: 1px 0 5px; letter-spacing: -.02e
 [data-theme="dark"] .topbar { background: rgba(35,34,36,.9); }
 [data-theme="dark"] .tab.active, [data-theme="dark"] .tab:hover { color: #f2f1ed; }
 [data-theme="dark"] .tab { color: #9a999d; }
-[data-theme="dark"] .page-intro h1 { color: #f1f0ed; }
 [data-theme="dark"] .theme-picker > span { color: #9b999e; }
 [data-theme="dark"] .theme-options { background: rgba(45,44,47,.8); }
 [data-theme="dark"] .theme-option { color: #aaa8ad; }

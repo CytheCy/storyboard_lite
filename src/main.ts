@@ -126,10 +126,6 @@ function renderPage() {
   return renderLibrary("style");
 }
 
-function pageIntro(kicker: string, title: string, description: string) {
-  return `<section class="page-intro"><p class="kicker">${kicker}</p><h1>${title}</h1><p>${description}</p></section>`;
-}
-
 function renderSettings() {
   return `<div class="page settings-page">
     <div class="settings-header">
@@ -190,8 +186,8 @@ function renderLibrary(type: "environment" | "style") {
   return `<div class="page library-page">
     <div class="library-header">
       ${isEnvironment
-        ? `<section class="page-intro environment-note"><p>The active Environment is sent to the prompt writer for every scene.</p></section>`
-        : pageIntro("Visual language", "Define the look.", "Active Style descriptions are appended exactly after the prompt writer finishes each scene prompt.")}
+        ? `<section class="page-intro library-note"><p>The active Environment is sent to the prompt writer for every scene.</p></section>`
+        : `<section class="page-intro library-note"><p>Active Style descriptions are appended exactly after the prompt writer finishes each scene prompt.</p></section>`}
       <button class="primary-add" data-add-item="${type}">${icon("plus")} Add ${type}</button>
     </div>
     <div class="item-count"><span>${String(items.length).padStart(2, "0")}</span> ${type}${items.length === 1 ? "" : "s"} in this project</div>
