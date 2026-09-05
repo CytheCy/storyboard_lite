@@ -133,7 +133,6 @@ function pageIntro(kicker: string, title: string, description: string) {
 function renderSettings() {
   return `<div class="page settings-page">
     <div class="settings-header">
-      ${pageIntro("Project setup", "Shape the story, frame by frame.", "Choose your source, destination, and the creative engines behind your storyboard.")}
       <div class="theme-picker" aria-label="Appearance">
         <span>Appearance</span>
         <div class="theme-options" role="radiogroup" aria-label="Color theme">
