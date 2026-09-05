@@ -102,11 +102,7 @@ function render() {
   app.innerHTML = `
     <div class="shell">
       <header class="topbar">
-        <a class="brand" href="#" aria-label="Frameforge home">
-          <span class="brand-mark">${icon("spark")}</span>
-          <span>Frameforge</span>
-          <small>Storyboard studio</small>
-        </a>
+        <span aria-hidden="true"></span>
         <nav class="tabs" aria-label="Workspace pages">
           ${tabButton("settings", "Settings", "01")}
           ${tabButton("environment", "Environment", "02")}
