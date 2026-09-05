@@ -189,7 +189,9 @@ function renderLibrary(type: "environment" | "style") {
   const items = isEnvironment ? state.environments : state.styles;
   return `<div class="page library-page">
     <div class="library-header">
-      ${pageIntro(isEnvironment ? "World building" : "Visual language", isEnvironment ? "Set the scene." : "Define the look.", isEnvironment ? "Describe recurring locations and worlds. The active Environment is sent to the prompt writer for every scene." : "Active Style descriptions are appended exactly after the prompt writer finishes each scene prompt.")}
+      ${isEnvironment
+        ? `<section class="page-intro environment-note"><p>The active Environment is sent to the prompt writer for every scene.</p></section>`
+        : pageIntro("Visual language", "Define the look.", "Active Style descriptions are appended exactly after the prompt writer finishes each scene prompt.")}
       <button class="primary-add" data-add-item="${type}">${icon("plus")} Add ${type}</button>
     </div>
     <div class="item-count"><span>${String(items.length).padStart(2, "0")}</span> ${type}${items.length === 1 ? "" : "s"} in this project</div>
