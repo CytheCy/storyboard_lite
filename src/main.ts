@@ -3,7 +3,7 @@ import nspell from "nspell";
 import aff from "dictionary-en-us/index.aff?raw";
 import dic from "dictionary-en-us/index.dic?raw";
 
-type Tab = "settings" | "environment" | "style";
+type Tab = "settings" | "environment" | "style" | "story-description";
 type ModelKind = "prompt" | "image";
 type Theme = "light" | "dark";
 type ImageFormat = "1:1" | "9:16" | "16:9";
@@ -16,6 +16,7 @@ type AppState = {
   prosePath: string;
   outputPath: string;
   promptPath: string;
+  storyDescriptionPrompt: string;
   promptModels: Model[];
   imageModels: Model[];
   selectedPromptModel: string;
@@ -47,6 +48,7 @@ const initialState: AppState = {
   prosePath: "",
   outputPath: "",
   promptPath: "",
+  storyDescriptionPrompt: "",
   promptModels: [
     { id: uid(), name: "GPT-5", provider: "OpenAI", apiKeyPath: "" },
     { id: uid(), name: "Claude Sonnet", provider: "Anthropic", apiKeyPath: "" }
@@ -92,6 +94,7 @@ let progress = 0;
 let isRunning = false;
 let eventMessage = "Ready to begin";
 let eventTime = "";
+let completionAudioContext: AudioContext | null = null;
 
 const app = document.querySelector<HTMLDivElement>("#app")!;
 const persist = () => localStorage.setItem("frameforge-state", JSON.stringify(state));
@@ -107,6 +110,7 @@ function render() {
           ${tabButton("settings", "Settings", "01")}
           ${tabButton("environment", "Environment", "02")}
           ${tabButton("style", "Style", "03")}
+          ${tabButton("story-description", "Story Description", "04")}
         </nav>
         <span aria-hidden="true"></span>
       </header>
@@ -123,7 +127,18 @@ function tabButton(tab: Tab, label: string, index: string) {
 function renderPage() {
   if (state.activeTab === "settings") return renderSettings();
   if (state.activeTab === "environment") return renderLibrary("environment");
+  if (state.activeTab === "story-description") return renderStoryDescription();
   return renderLibrary("style");
+}
+
+function renderStoryDescription() {
+  return `<div class="page story-description-page">
+    <section class="page-intro"><h2>Story Description</h2><p>Paste the instructions you want the selected Prompt AI to use with your prose file. When you make storyboards, a separate request creates the description and saves it as a .txt file in the storyboard folder. Another separate request lists all technology in the prose with a one-sentence description of each item, saved after the story description. Leave this blank to generate only the technology list.</p></section>
+    <section class="panel story-description-panel">
+      <label class="textarea-label" for="story-description-prompt">Story description prompt</label>
+      <textarea id="story-description-prompt" placeholder="Paste your story description prompt here…" spellcheck="true">${escapeHtml(state.storyDescriptionPrompt)}</textarea>
+    </section>
+  </div>`;
 }
 
 function renderSettings() {
@@ -167,6 +182,7 @@ function renderImageFormat() {
 
 function renderModelPanel(kind: ModelKind, models: Model[], selected: string) {
   return `<article class="panel model-panel">
+    <h2 class="model-panel-label">${kind === "image" ? "TTI AI" : "Prompt AI"}</h2>
     <div class="model-list">
       ${models.map(model => `<div class="model-row ${selected === model.id ? "selected" : ""}">
         <button class="model-choice" role="radio" aria-checked="${selected === model.id}" data-select-model="${model.id}" data-kind="${kind}">
@@ -266,6 +282,11 @@ function preserveCase(original: string, replacement: string) {
 }
 
 function bindEvents() {
+  const descriptionPrompt = document.querySelector<HTMLTextAreaElement>("#story-description-prompt");
+  if (descriptionPrompt) descriptionPrompt.oninput = () => {
+    state.storyDescriptionPrompt = descriptionPrompt.value;
+    persist();
+  };
   document.querySelectorAll<HTMLElement>("[data-tab]").forEach(el => el.onclick = () => { state.activeTab = el.dataset.tab as Tab; saveAndRender(); });
   document.querySelectorAll<HTMLButtonElement>("[data-theme-choice]").forEach(el => el.onclick = () => {
     state.theme = el.dataset.themeChoice as Theme;
@@ -354,6 +375,38 @@ function saveProject() {
   render();
 }
 
+function prepareCompletionAudio() {
+  try {
+    completionAudioContext ??= new AudioContext();
+    if (completionAudioContext.state === "suspended") void completionAudioContext.resume();
+  } catch {
+    completionAudioContext = null;
+  }
+}
+
+async function playCompletionChime() {
+  try {
+    if (!completionAudioContext) return;
+    if (completionAudioContext.state === "suspended") await completionAudioContext.resume();
+    const start = completionAudioContext.currentTime;
+    [523.25, 659.25, 783.99].forEach((frequency, index) => {
+      const oscillator = completionAudioContext!.createOscillator();
+      const gain = completionAudioContext!.createGain();
+      const noteStart = start + index * 0.14;
+      oscillator.type = "sine";
+      oscillator.frequency.setValueAtTime(frequency, noteStart);
+      gain.gain.setValueAtTime(0.0001, noteStart);
+      gain.gain.exponentialRampToValueAtTime(0.16, noteStart + 0.025);
+      gain.gain.exponentialRampToValueAtTime(0.0001, noteStart + 0.28);
+      oscillator.connect(gain).connect(completionAudioContext!.destination);
+      oscillator.start(noteStart);
+      oscillator.stop(noteStart + 0.3);
+    });
+  } catch {
+    // Audio may be unavailable or disabled; storyboard completion still succeeds.
+  }
+}
+
 async function runStoryboard() {
   if (!state.prosePath || !state.outputPath || !state.promptPath) {
     state.activeTab = "settings"; eventMessage = "Choose a prose file, storyboard folder, and prompt folder first"; eventTime = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }); render(); return;
@@ -375,12 +428,14 @@ async function runStoryboard() {
     eventMessage = "Storyboard generation is available in the Electron app"; eventTime = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }); render(); return;
   }
 
+  prepareCompletionAudio();
   isRunning = true; progress = 1; eventMessage = "Starting storyboard pipeline"; eventTime = ""; render();
   try {
     const result = await window.frameforge.runStoryboard({
       prosePath: state.prosePath,
       outputPath: state.outputPath,
       promptPath: state.promptPath,
+      storyDescriptionPrompt: state.storyDescriptionPrompt,
       imageFormat: state.imageFormat,
       promptModel,
       imageModel,
@@ -389,6 +444,8 @@ async function runStoryboard() {
     });
     progress = 100;
     eventMessage = `Created ${result.imageFiles.length} storyboard${result.imageFiles.length === 1 ? "" : "s"} from ${result.scenes} scene${result.scenes === 1 ? "" : "s"}`;
+    if (result.storyDescriptionFile) eventMessage += " and saved story text file";
+    void playCompletionChime();
   } catch (error) {
     progress = 0;
     const message = error instanceof Error ? error.message : String(error);

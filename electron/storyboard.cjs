@@ -4,6 +4,13 @@ const path = require("node:path");
 const RESPONSES_URL = "https://api.openai.com/v1/responses";
 const IMAGES_URL = "https://api.openai.com/v1/images/generations";
 
+const TECHNOLOGY_INSTRUCTIONS = `Find all technology mentioned in the supplied prose,
+including tools, devices, machines, vehicles, materials, systems, and fictional
+technology. List each distinct technology once. For each item, give its name
+followed by exactly one sentence describing it based only on the prose. Do not
+invent technologies or unsupported details. Return a plain-text bulleted list
+with no heading or commentary. If none is found, return "No technology found."`;
+
 const SCENE_DETECTION_INSTRUCTIONS = `
 You are a professional story analyst and storyboard supervisor.
 
@@ -257,7 +264,43 @@ async function runStoryboardPipeline(job, onProgress = () => {}) {
   const prose = (await fs.readFile(job.prosePath, "utf8")).trim();
   if (!prose) throw new Error("The selected prose file is empty.");
 
-  onProgress({ progress: 4, message: "Reading prose and identifying scenes" });
+  const sourceStem = safeStem(path.basename(job.prosePath, path.extname(job.prosePath)));
+  let storyDescriptionFile = null;
+  if (job.storyDescriptionPrompt?.trim()) {
+    onProgress({ progress: 4, message: "Writing story description" });
+    const description = await callPromptModel({
+      apiKey: promptKey,
+      model: promptModel,
+      instructions: job.storyDescriptionPrompt,
+      input: `PROSE:\n${prose}`,
+      maxOutputTokens: 6_000,
+      retryMaxOutputTokens: 12_000,
+      label: "Story description"
+    });
+    storyDescriptionFile = await availablePath(job.outputPath, `${sourceStem}_story_description.txt`);
+    await fs.writeFile(storyDescriptionFile, `${description}\n`, "utf8");
+    onProgress({ progress: 10, message: "Saved story description" });
+  }
+
+  onProgress({ progress: 11, message: "Identifying technology in the prose" });
+  const technology = await callPromptModel({
+    apiKey: promptKey,
+    model: promptModel,
+    instructions: TECHNOLOGY_INSTRUCTIONS,
+    input: `PROSE:\n${prose}`,
+    maxOutputTokens: 6_000,
+    retryMaxOutputTokens: 12_000,
+    label: "Technology list"
+  });
+  const technologySection = `Technology\n\n${technology}\n`;
+  if (storyDescriptionFile) {
+    await fs.appendFile(storyDescriptionFile, `\n${technologySection}`, "utf8");
+  } else {
+    storyDescriptionFile = await availablePath(job.outputPath, `${sourceStem}_story_description.txt`);
+    await fs.writeFile(storyDescriptionFile, technologySection, "utf8");
+  }
+
+  onProgress({ progress: 12, message: "Reading prose and identifying scenes" });
   const sceneText = await callPromptModel({
     apiKey: promptKey,
     model: promptModel,
@@ -271,7 +314,6 @@ async function runStoryboardPipeline(job, onProgress = () => {}) {
   const scenes = parseScenes(sceneText, prose);
   onProgress({ progress: 18, message: `Found ${scenes.length} scene${scenes.length === 1 ? "" : "s"}` });
 
-  const sourceStem = safeStem(path.basename(job.prosePath, path.extname(job.prosePath)));
   const promptResults = [];
   for (let index = 0; index < scenes.length; index += 1) {
     const scene = scenes[index];
@@ -318,6 +360,7 @@ async function runStoryboardPipeline(job, onProgress = () => {}) {
   return {
     scenes: scenes.length,
     promptFiles: promptResults.map(item => item.promptFile),
+    storyDescriptionFile,
     imageFiles
   };
 }

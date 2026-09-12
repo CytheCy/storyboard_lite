@@ -26,12 +26,13 @@ interface Window {
       prosePath: string;
       outputPath: string;
       promptPath: string;
+      storyDescriptionPrompt: string;
       imageFormat: "1:1" | "9:16" | "16:9";
       promptModel: { name: string; provider: string; apiKeyPath: string };
       imageModel: { name: string; provider: string; apiKeyPath: string };
       environments: Array<{ title: string; description: string; negativePrompt?: string; enabled: boolean }>;
       styles: Array<{ title: string; description: string; enabled: boolean }>;
-    }): Promise<{ scenes: number; promptFiles: string[]; imageFiles: string[] }>;
+    }): Promise<{ scenes: number; promptFiles: string[]; imageFiles: string[]; storyDescriptionFile: string | null }>;
     onProgress(callback: (update: { progress: number; message: string }) => void): () => void;
   };
 }

@@ -10,6 +10,69 @@ const {
   validateJob
 } = require("./storyboard.cjs");
 
+test("story descriptions use an isolated request and preserve existing description files", async () => {
+  const testRoot = await fs.mkdtemp(path.join(os.tmpdir(), "frameforge-description-"));
+  const prosePath = path.join(testRoot, "story.md");
+  const keyPath = path.join(testRoot, "test.key");
+  const outputPath = path.join(testRoot, "images");
+  const prose = "Mara enters the station. She finds her missing brother.";
+  const instructions = "Write a short story description with no spoilers.";
+  const originalFetch = global.fetch;
+  const requests = [];
+  try {
+    await fs.writeFile(prosePath, prose);
+    await fs.writeFile(keyPath, "test-key");
+    await fs.mkdir(outputPath);
+    const existingFile = path.join(outputPath, "story_story_description.txt");
+    await fs.writeFile(existingFile, "Earlier description");
+    global.fetch = async (url, options) => {
+      const body = JSON.parse(options.body);
+      requests.push({ url, body });
+      const responses = [
+        { output_text: "A traveler makes an unexpected discovery." },
+        { output_text: "- Station: A constructed facility that Mara enters." },
+        { output_text: JSON.stringify([{ scene_number: 1, scene_title: "Arrival", prose_start: 0, prose_end: prose.length }]) },
+        { output_text: "SHOT TYPE: Wide shot" },
+        { data: [{ b64_json: Buffer.from("image").toString("base64") }] }
+      ];
+      assert.ok(responses[requests.length - 1], "No unexpected extra request");
+      return { ok: true, json: async () => ({ status: "completed", ...responses[requests.length - 1] }) };
+    };
+    const result = await runStoryboardPipeline({
+      prosePath, outputPath, promptPath: path.join(testRoot, "prompts"),
+      storyDescriptionPrompt: instructions,
+      promptModel: { name: "GPT-5", provider: "OpenAI", apiKeyPath: keyPath },
+      imageModel: { name: "GPT Image 1", provider: "OpenAI", apiKeyPath: keyPath },
+      environments: [{ title: "Station", description: "White rooms", enabled: true }],
+      styles: [{ description: "Ink outlines", enabled: true }]
+    });
+    assert.equal(requests.length, 5);
+    assert.equal(requests[1].body.model, "gpt-5");
+    assert.equal(requests[1].body.input, `PROSE:\n${prose}`);
+    assert.match(requests[1].body.instructions, /exactly one sentence/);
+    assert.equal(requests[1].body.store, false);
+    assert.equal(requests[0].body.model, "gpt-5");
+    assert.equal(requests[0].body.instructions, instructions);
+    assert.equal(requests[0].body.input, `PROSE:\n${prose}`);
+    assert.equal(requests[0].body.store, false);
+    for (const request of requests.slice(1)) {
+      assert.ok(!JSON.stringify(request.body).includes(instructions));
+      assert.ok(!JSON.stringify(request.body).includes("A traveler makes an unexpected discovery."));
+      assert.equal(request.body.previous_response_id, undefined);
+    }
+    assert.equal(result.storyDescriptionFile, path.join(outputPath, "story_story_description_v01.txt"));
+    assert.equal(await fs.readFile(result.storyDescriptionFile, "utf8"), "A traveler makes an unexpected discovery.\n\nTechnology\n\n- Station: A constructed facility that Mara enters.\n");
+    for (const request of requests.slice(2)) {
+      assert.ok(!JSON.stringify(request.body).includes(requests[1].body.instructions));
+      assert.ok(!JSON.stringify(request.body).includes("A constructed facility that Mara enters."));
+    }
+    assert.equal(await fs.readFile(existingFile, "utf8"), "Earlier description");
+  } finally {
+    global.fetch = originalFetch;
+    await fs.rm(testRoot, { recursive: true, force: true });
+  }
+});
+
 test("every prompt-writer input contains the active Environment", () => {
   const input = buildImagePromptInput({
     title: "Arrival",
@@ -72,6 +135,9 @@ test("the pipeline sends Environment to AI, then appends Style before saving and
   const originalFetch = global.fetch;
   const requests = [];
   global.fetch = async (url, options) => {
+    if (JSON.parse(options.body).instructions?.startsWith("Find all technology")) {
+      return { ok: true, json: async () => ({ status: "completed", output_text: "No technology found." }) };
+    }
     requests.push({ url, body: JSON.parse(options.body) });
     if (requests.length === 1) {
       return {
@@ -114,6 +180,8 @@ test("the pipeline sends Environment to AI, then appends Style before saving and
     });
 
     assert.equal(requests.length, 3);
+    assert.equal(path.dirname(result.storyDescriptionFile), outputPath);
+    assert.equal(await fs.readFile(result.storyDescriptionFile, "utf8"), "Technology\n\nNo technology found.\n");
     assert.deepEqual(requests[0].body.reasoning, { effort: "minimal" });
     assert.deepEqual(requests[0].body.text, { verbosity: "low" });
     assert.match(requests[1].body.input, /Curved white rooms with integrated wall lights\./);
@@ -138,6 +206,9 @@ test("an incomplete prompt response retries with a larger token allowance", asyn
   const originalFetch = global.fetch;
   const requests = [];
   global.fetch = async (url, options) => {
+    if (JSON.parse(options.body).instructions?.startsWith("Find all technology")) {
+      return { ok: true, json: async () => ({ status: "completed", output_text: "No technology found." }) };
+    }
     requests.push({ url, body: JSON.parse(options.body) });
     if (requests.length === 1) {
       return {
