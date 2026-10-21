@@ -259,3 +259,158 @@ test("an incomplete prompt response retries with a larger token allowance", asyn
     await fs.rm(testRoot, { recursive: true, force: true });
   }
 });
+
+test("rejected scene prompts and image requests are skipped while later scenes finish", async () => {
+  const testRoot = await fs.mkdtemp(path.join(os.tmpdir(), "frameforge-rejections-"));
+  const prosePath = path.join(testRoot, "story.md");
+  const keyPath = path.join(testRoot, "openai.key");
+  const promptPath = path.join(testRoot, "prompts");
+  const outputPath = path.join(testRoot, "images");
+  const prose = "First scene. Second scene. Third scene.";
+  const originalFetch = global.fetch;
+  const progressUpdates = [];
+  const imagePrompts = [];
+  try {
+    await fs.writeFile(prosePath, prose);
+    await fs.writeFile(keyPath, "test-api-key");
+    global.fetch = async (url, options) => {
+      const body = JSON.parse(options.body);
+      if (url.includes("/images/generations")) {
+        imagePrompts.push(body.prompt);
+        if (imagePrompts.length === 1) {
+          return { ok: false, status: 400, json: async () => ({
+            error: { message: "Your request was rejected by the safety system. If you believe this is an error, contact us at help.openai.com." }
+          }) };
+        }
+        return { ok: true, json: async () => ({ data: [{ b64_json: Buffer.from("third image").toString("base64") }] }) };
+      }
+      if (body.instructions.startsWith("Find all technology")) {
+        return { ok: true, json: async () => ({ status: "completed", output_text: "No technology found." }) };
+      }
+      if (body.instructions.includes("Divide the supplied prose")) {
+        return { ok: true, json: async () => ({ status: "completed", output_text: JSON.stringify([
+          { scene_number: 1, scene_title: "First", prose_start: 0, prose_end: 13 },
+          { scene_number: 2, scene_title: "Second", prose_start: 13, prose_end: 27 },
+          { scene_number: 3, scene_title: "Third", prose_start: 27, prose_end: prose.length }
+        ]) }) };
+      }
+      if (body.input.includes("Title: First")) {
+        return { ok: false, status: 400, json: async () => ({
+          error: { code: "content_policy_violation", message: "Scene prompt blocked." }
+        }) };
+      }
+      const scene = body.input.includes("Title: Second") ? "second" : "third";
+      return { ok: true, json: async () => ({ status: "completed", output_text: `SHOT TYPE: ${scene}` }) };
+    };
+
+    const result = await runStoryboardPipeline({
+      prosePath, promptPath, outputPath,
+      promptModel: { name: "GPT-5", provider: "OpenAI", apiKeyPath: keyPath },
+      imageModel: { name: "GPT Image 1", provider: "OpenAI", apiKeyPath: keyPath },
+      environments: [{ title: "Station", description: "White rooms.", enabled: true }],
+      styles: [{ title: "Ink", description: "Clean ink.", enabled: true }]
+    }, update => progressUpdates.push(update));
+
+    assert.equal(result.scenes, 3);
+    assert.deepEqual(result.skippedScenes.map(({ sceneNumber, stage }) => ({ sceneNumber, stage })), [
+      { sceneNumber: 1, stage: "prompt" },
+      { sceneNumber: 2, stage: "image" }
+    ]);
+    assert.equal(result.promptFiles.length, 2);
+    assert.equal(result.imageFiles.length, 1);
+    assert.match(imagePrompts[1], /SHOT TYPE: third/);
+    assert.equal(await fs.readFile(result.imageFiles[0], "utf8"), "third image");
+    assert.match(await fs.readFile(result.promptFiles[0], "utf8"), /SHOT TYPE: second/);
+    assert.ok(progressUpdates.some(update => update.message === "Skipped scene 1: prompt rejected"));
+    assert.ok(progressUpdates.some(update => update.message === "Skipped scene 2: image prompt rejected"));
+    assert.match(progressUpdates.at(-1).message, /skipped 2 rejected scenes/);
+  } finally {
+    global.fetch = originalFetch;
+    await fs.rm(testRoot, { recursive: true, force: true });
+  }
+});
+
+test("unrelated request failures still stop the pipeline", async () => {
+  const testRoot = await fs.mkdtemp(path.join(os.tmpdir(), "frameforge-error-"));
+  const prosePath = path.join(testRoot, "story.md");
+  const keyPath = path.join(testRoot, "openai.key");
+  const prose = "A scene.";
+  const originalFetch = global.fetch;
+  try {
+    await fs.writeFile(prosePath, prose);
+    await fs.writeFile(keyPath, "test-api-key");
+    global.fetch = async (_url, options) => {
+      const body = JSON.parse(options.body);
+      if (body.instructions.startsWith("Find all technology")) {
+        return { ok: true, json: async () => ({ status: "completed", output_text: "No technology found." }) };
+      }
+      if (body.instructions.includes("Divide the supplied prose")) {
+        return { ok: true, json: async () => ({ status: "completed", output_text: JSON.stringify([
+          { scene_number: 1, scene_title: "One", prose_start: 0, prose_end: prose.length }
+        ]) }) };
+      }
+      return { ok: false, status: 429, json: async () => ({ error: { message: "Rate limit exceeded." } }) };
+    };
+
+    await assert.rejects(runStoryboardPipeline({
+      prosePath,
+      promptPath: path.join(testRoot, "prompts"),
+      outputPath: path.join(testRoot, "images"),
+      promptModel: { name: "GPT-5", provider: "OpenAI", apiKeyPath: keyPath },
+      imageModel: { name: "GPT Image 1", provider: "OpenAI", apiKeyPath: keyPath },
+      environments: [{ title: "Station", description: "White rooms.", enabled: true }],
+      styles: [{ title: "Ink", description: "Clean ink.", enabled: true }]
+    }), /Rate limit exceeded/);
+  } finally {
+    global.fetch = originalFetch;
+    await fs.rm(testRoot, { recursive: true, force: true });
+  }
+});
+
+test("rejected optional story text requests do not stop scene generation", async () => {
+  const testRoot = await fs.mkdtemp(path.join(os.tmpdir(), "frameforge-story-text-rejection-"));
+  const prosePath = path.join(testRoot, "story.md");
+  const keyPath = path.join(testRoot, "openai.key");
+  const prose = "Mara enters the station.";
+  const originalFetch = global.fetch;
+  try {
+    await fs.writeFile(prosePath, prose);
+    await fs.writeFile(keyPath, "test-api-key");
+    global.fetch = async (url, options) => {
+      const body = JSON.parse(options.body);
+      if (url.includes("/images/generations")) {
+        return { ok: true, json: async () => ({ data: [{ b64_json: Buffer.from("image").toString("base64") }] }) };
+      }
+      if (body.instructions === "Write a summary." || body.instructions.startsWith("Find all technology")) {
+        return { ok: false, status: 400, json: async () => ({
+          error: { message: "Your request was rejected by the safety system." }
+        }) };
+      }
+      if (body.instructions.includes("Divide the supplied prose")) {
+        return { ok: true, json: async () => ({ status: "completed", output_text: JSON.stringify([
+          { scene_number: 1, scene_title: "Arrival", prose_start: 0, prose_end: prose.length }
+        ]) }) };
+      }
+      return { ok: true, json: async () => ({ status: "completed", output_text: "SHOT TYPE: Wide shot" }) };
+    };
+
+    const result = await runStoryboardPipeline({
+      prosePath,
+      storyDescriptionPrompt: "Write a summary.",
+      promptPath: path.join(testRoot, "prompts"),
+      outputPath: path.join(testRoot, "images"),
+      promptModel: { name: "GPT-5", provider: "OpenAI", apiKeyPath: keyPath },
+      imageModel: { name: "GPT Image 1", provider: "OpenAI", apiKeyPath: keyPath },
+      environments: [{ title: "Station", description: "White rooms.", enabled: true }],
+      styles: [{ title: "Ink", description: "Clean ink.", enabled: true }]
+    });
+
+    assert.deepEqual(result.skippedSteps.map(item => item.stage), ["story description", "technology list"]);
+    assert.equal(result.storyDescriptionFile, null);
+    assert.equal(result.imageFiles.length, 1);
+    assert.equal(await fs.readFile(result.imageFiles[0], "utf8"), "image");
+  } finally {
+    global.fetch = originalFetch;
+    await fs.rm(testRoot, { recursive: true, force: true });
+  }
+});

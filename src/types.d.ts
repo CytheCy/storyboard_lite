@@ -32,7 +32,14 @@ interface Window {
       imageModel: { name: string; provider: string; apiKeyPath: string };
       environments: Array<{ title: string; description: string; negativePrompt?: string; enabled: boolean }>;
       styles: Array<{ title: string; description: string; enabled: boolean }>;
-    }): Promise<{ scenes: number; promptFiles: string[]; imageFiles: string[]; storyDescriptionFile: string | null }>;
+    }): Promise<{
+      scenes: number;
+      promptFiles: string[];
+      imageFiles: string[];
+      storyDescriptionFile: string | null;
+      skippedScenes: Array<{ sceneNumber: number; stage: "prompt" | "image"; reason: string }>;
+      skippedSteps: Array<{ stage: "story description" | "technology list"; reason: string }>;
+    }>;
     onProgress(callback: (update: { progress: number; message: string }) => void): () => void;
   };
 }

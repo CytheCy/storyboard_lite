@@ -80,9 +80,20 @@ async function apiRequest(url, apiKey, body, timeoutMs = 180_000) {
   const data = await response.json().catch(() => ({}));
   if (!response.ok) {
     const message = data?.error?.message ?? `Request failed with status ${response.status}`;
-    throw new Error(message);
+    const error = new Error(message);
+    error.code = data?.error?.code;
+    error.type = data?.error?.type;
+    throw error;
   }
   return data;
+}
+
+function isSafetyRejection(error) {
+  const code = String(error?.code ?? "").toLowerCase();
+  const type = String(error?.type ?? "").toLowerCase();
+  const message = String(error?.message ?? "");
+  return [code, type].some(value => ["content_policy_violation", "safety_violation", "content_filter", "refusal"].includes(value))
+    || /rejected by the safety system|content policy violation|content[_ ]filter|safety violation/i.test(message);
 }
 
 function responseText(data) {
@@ -93,7 +104,17 @@ function responseText(data) {
     .filter(item => item?.type === "output_text" && typeof item.text === "string")
     .map(item => item.text)
     .join("");
-  if (!text.trim()) throw new Error("The prompt model returned no text.");
+  if (!text.trim()) {
+    const refused = (data.output ?? []).some(item =>
+      (item.content ?? []).some(content => content?.type === "refusal")
+    );
+    if (refused) {
+      const error = new Error("The prompt model refused this request.");
+      error.code = "refusal";
+      throw error;
+    }
+    throw new Error("The prompt model returned no text.");
+  }
   return text.trim();
 }
 
@@ -266,38 +287,57 @@ async function runStoryboardPipeline(job, onProgress = () => {}) {
 
   const sourceStem = safeStem(path.basename(job.prosePath, path.extname(job.prosePath)));
   let storyDescriptionFile = null;
+  const skippedSteps = [];
   if (job.storyDescriptionPrompt?.trim()) {
     onProgress({ progress: 4, message: "Writing story description" });
-    const description = await callPromptModel({
-      apiKey: promptKey,
-      model: promptModel,
-      instructions: job.storyDescriptionPrompt,
-      input: `PROSE:\n${prose}`,
-      maxOutputTokens: 6_000,
-      retryMaxOutputTokens: 12_000,
-      label: "Story description"
-    });
-    storyDescriptionFile = await availablePath(job.outputPath, `${sourceStem}_story_description.txt`);
-    await fs.writeFile(storyDescriptionFile, `${description}\n`, "utf8");
-    onProgress({ progress: 10, message: "Saved story description" });
+    let description;
+    try {
+      description = await callPromptModel({
+        apiKey: promptKey,
+        model: promptModel,
+        instructions: job.storyDescriptionPrompt,
+        input: `PROSE:\n${prose}`,
+        maxOutputTokens: 6_000,
+        retryMaxOutputTokens: 12_000,
+        label: "Story description"
+      });
+    } catch (error) {
+      if (!isSafetyRejection(error)) throw error;
+      skippedSteps.push({ stage: "story description", reason: error.message });
+      onProgress({ progress: 10, message: "Skipped rejected story description" });
+    }
+    if (description) {
+      storyDescriptionFile = await availablePath(job.outputPath, `${sourceStem}_story_description.txt`);
+      await fs.writeFile(storyDescriptionFile, `${description}\n`, "utf8");
+      onProgress({ progress: 10, message: "Saved story description" });
+    }
   }
 
   onProgress({ progress: 11, message: "Identifying technology in the prose" });
-  const technology = await callPromptModel({
-    apiKey: promptKey,
-    model: promptModel,
-    instructions: TECHNOLOGY_INSTRUCTIONS,
-    input: `PROSE:\n${prose}`,
-    maxOutputTokens: 6_000,
-    retryMaxOutputTokens: 12_000,
-    label: "Technology list"
-  });
-  const technologySection = `Technology\n\n${technology}\n`;
-  if (storyDescriptionFile) {
-    await fs.appendFile(storyDescriptionFile, `\n${technologySection}`, "utf8");
-  } else {
-    storyDescriptionFile = await availablePath(job.outputPath, `${sourceStem}_story_description.txt`);
-    await fs.writeFile(storyDescriptionFile, technologySection, "utf8");
+  let technology;
+  try {
+    technology = await callPromptModel({
+      apiKey: promptKey,
+      model: promptModel,
+      instructions: TECHNOLOGY_INSTRUCTIONS,
+      input: `PROSE:\n${prose}`,
+      maxOutputTokens: 6_000,
+      retryMaxOutputTokens: 12_000,
+      label: "Technology list"
+    });
+  } catch (error) {
+    if (!isSafetyRejection(error)) throw error;
+    skippedSteps.push({ stage: "technology list", reason: error.message });
+    onProgress({ progress: 12, message: "Skipped rejected technology list" });
+  }
+  if (technology) {
+    const technologySection = `Technology\n\n${technology}\n`;
+    if (storyDescriptionFile) {
+      await fs.appendFile(storyDescriptionFile, `\n${technologySection}`, "utf8");
+    } else {
+      storyDescriptionFile = await availablePath(job.outputPath, `${sourceStem}_story_description.txt`);
+      await fs.writeFile(storyDescriptionFile, technologySection, "utf8");
+    }
   }
 
   onProgress({ progress: 12, message: "Reading prose and identifying scenes" });
@@ -315,22 +355,31 @@ async function runStoryboardPipeline(job, onProgress = () => {}) {
   onProgress({ progress: 18, message: `Found ${scenes.length} scene${scenes.length === 1 ? "" : "s"}` });
 
   const promptResults = [];
+  const skippedScenes = [];
   for (let index = 0; index < scenes.length; index += 1) {
     const scene = scenes[index];
     onProgress({
       progress: 20 + Math.round(((index + 1) / scenes.length) * 35),
       message: `Writing prompt ${index + 1} of ${scenes.length} with ${environment.title}`
     });
-    const aiPrompt = await callPromptModel({
-      apiKey: promptKey,
-      model: promptModel,
-      instructions: IMAGE_PROMPT_INSTRUCTIONS,
-      input: buildImagePromptInput(scene, environment),
-      maxOutputTokens: 2_000,
-      retryMaxOutputTokens: 6_000,
-      verbosity: "medium",
-      label: `Scene ${scene.sceneNumber} prompt`
-    });
+    let aiPrompt;
+    try {
+      aiPrompt = await callPromptModel({
+        apiKey: promptKey,
+        model: promptModel,
+        instructions: IMAGE_PROMPT_INSTRUCTIONS,
+        input: buildImagePromptInput(scene, environment),
+        maxOutputTokens: 2_000,
+        retryMaxOutputTokens: 6_000,
+        verbosity: "medium",
+        label: `Scene ${scene.sceneNumber} prompt`
+      });
+    } catch (error) {
+      if (!isSafetyRejection(error)) throw error;
+      skippedScenes.push({ sceneNumber: scene.sceneNumber, stage: "prompt", reason: error.message });
+      onProgress({ progress: 20 + Math.round(((index + 1) / scenes.length) * 35), message: `Skipped scene ${scene.sceneNumber}: prompt rejected` });
+      continue;
+    }
     const finalPrompt = appendStyleDescription(stripMarkdownFence(aiPrompt), styles);
     const tag = String(scene.sceneNumber).padStart(Math.max(2, String(scenes.length).length), "0");
     const promptFile = await availablePath(job.promptPath, `${sourceStem}_scene_${tag}.md`);
@@ -345,23 +394,37 @@ async function runStoryboardPipeline(job, onProgress = () => {}) {
       progress: 58 + Math.round(((index + 1) / promptResults.length) * 39),
       message: `Rendering storyboard ${index + 1} of ${promptResults.length}`
     });
-    const bytes = await generateImage({
-      apiKey: imageKey,
-      model: imageModel,
-      prompt: item.finalPrompt,
-      imageFormat: job.imageFormat
-    });
+    let bytes;
+    try {
+      bytes = await generateImage({
+        apiKey: imageKey,
+        model: imageModel,
+        prompt: item.finalPrompt,
+        imageFormat: job.imageFormat
+      });
+    } catch (error) {
+      if (!isSafetyRejection(error)) throw error;
+      skippedScenes.push({ sceneNumber: item.scene.sceneNumber, stage: "image", reason: error.message });
+      onProgress({ progress: 58 + Math.round(((index + 1) / promptResults.length) * 39), message: `Skipped scene ${item.scene.sceneNumber}: image prompt rejected` });
+      continue;
+    }
     const imageFile = await availablePath(job.outputPath, `${path.basename(item.promptFile, ".md")}.png`);
     await fs.writeFile(imageFile, bytes);
     imageFiles.push(imageFile);
   }
 
-  onProgress({ progress: 100, message: `Created ${imageFiles.length} storyboard${imageFiles.length === 1 ? "" : "s"}` });
+  const skippedMessage = [
+    skippedScenes.length ? `${skippedScenes.length} rejected scene${skippedScenes.length === 1 ? "" : "s"}` : "",
+    ...skippedSteps.map(item => item.stage)
+  ].filter(Boolean).join(", ");
+  onProgress({ progress: 100, message: `Created ${imageFiles.length} storyboard${imageFiles.length === 1 ? "" : "s"}${skippedMessage ? `; skipped ${skippedMessage}` : ""}` });
   return {
     scenes: scenes.length,
     promptFiles: promptResults.map(item => item.promptFile),
     storyDescriptionFile,
-    imageFiles
+    imageFiles,
+    skippedScenes,
+    skippedSteps
   };
 }
 

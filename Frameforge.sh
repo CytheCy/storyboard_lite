@@ -2,7 +2,7 @@
 
 set -u
 
-PROJECT_DIR="/home/cport/Git/Storyboard_Lite"
+PROJECT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 export PATH="/home/cport/.npm-global/bin:/usr/local/bin:/usr/bin:/bin"
 
 # KDE may start a clicked shell script without a terminal. Reopen it in Konsole

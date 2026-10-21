@@ -445,6 +445,13 @@ async function runStoryboard() {
     progress = 100;
     eventMessage = `Created ${result.imageFiles.length} storyboard${result.imageFiles.length === 1 ? "" : "s"} from ${result.scenes} scene${result.scenes === 1 ? "" : "s"}`;
     if (result.storyDescriptionFile) eventMessage += " and saved story text file";
+    if (result.skippedScenes.length) {
+      const sceneNumbers = result.skippedScenes.map(item => item.sceneNumber).join(", ");
+      eventMessage += `; skipped rejected scene${result.skippedScenes.length === 1 ? "" : "s"} ${sceneNumbers}`;
+    }
+    if (result.skippedSteps.length) {
+      eventMessage += `; skipped rejected ${result.skippedSteps.map(item => item.stage).join(", ")}`;
+    }
     void playCompletionChime();
   } catch (error) {
     progress = 0;
