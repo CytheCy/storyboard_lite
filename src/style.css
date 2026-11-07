@@ -74,6 +74,12 @@ h2 { font-size: 16px; font-weight: 700; margin: 1px 0 5px; letter-spacing: -.02e
 .add-button { margin-top: 13px; width: 100%; border: 1px dashed #d4d2ca; background: transparent; color: #72736c; border-radius: 11px; padding: 10px; font-size: 11px; }
 .add-button:hover { background: #f5f5ee; border-color: #aebe78; }
 .add-button svg, .primary-add svg { width: 16px; height: 16px; }
+.add-model-form { display: grid; gap: 10px; margin-top: 13px; padding: 14px; border: 1px solid var(--line); border-radius: 11px; }
+.add-model-form label { display: grid; gap: 5px; color: var(--muted); font-size: 10px; font-weight: 700; }
+.add-model-form input { width: 100%; min-width: 0; padding: 9px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper); color: var(--ink); font-size: 12px; }
+.add-model-actions { display: flex; justify-content: flex-end; gap: 8px; }
+.add-model-actions button { border: 1px solid var(--line); border-radius: 8px; padding: 8px 11px; background: var(--paper); color: var(--ink); font-size: 11px; font-weight: 700; cursor: pointer; }
+.add-model-actions button[type="submit"] { border-color: var(--lime-deep); background: var(--lime); color: #26300e; }
 .library-header { display: flex; align-items: end; justify-content: space-between; gap: 30px; }
 .primary-add { flex: 0 0 auto; border: 0; border-radius: 12px; padding: 13px 18px; background: var(--plum); color: white; box-shadow: 0 8px 18px rgba(46,38,51,.16); }
 .primary-add:hover { transform: translateY(-1px); box-shadow: 0 10px 23px rgba(46,38,51,.2); }

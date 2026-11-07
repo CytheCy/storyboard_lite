@@ -54,7 +54,7 @@ const initialState: AppState = {
     { id: uid(), name: "Claude Sonnet", provider: "Anthropic", apiKeyPath: "" }
   ],
   imageModels: [
-    { id: uid(), name: "GPT Image 1", provider: "OpenAI", apiKeyPath: "" },
+    { id: uid(), name: "gpt-image-2", provider: "OpenAI", apiKeyPath: "" },
     { id: uid(), name: "Flux Pro", provider: "Black Forest Labs", apiKeyPath: "" }
   ],
   selectedPromptModel: "",
@@ -95,6 +95,7 @@ let isRunning = false;
 let eventMessage = "Ready to begin";
 let eventTime = "";
 let completionAudioContext: AudioContext | null = null;
+let addingModel: ModelKind | null = null;
 
 const app = document.querySelector<HTMLDivElement>("#app")!;
 const persist = () => localStorage.setItem("frameforge-state", JSON.stringify(state));
@@ -192,7 +193,11 @@ function renderModelPanel(kind: ModelKind, models: Model[], selected: string) {
         <div class="key-path"><span>${model.apiKeyPath ? escapeHtml(model.apiKeyPath) : "API key file not set"}</span><button title="Choose API key file" data-key-model="${model.id}" data-kind="${kind}">${icon("file")}</button></div>
       </div>`).join("")}
     </div>
-    <button class="add-button" data-add-model="${kind}">${icon("plus")} Add model</button>
+    ${addingModel === kind ? `<form class="add-model-form" data-model-form="${kind}">
+      <label>Model name<input name="name" required placeholder="${kind === "image" ? "gpt-image-2" : "gpt-5"}" autocomplete="off" /></label>
+      <label>Provider<input name="provider" required value="OpenAI" autocomplete="off" /></label>
+      <div class="add-model-actions"><button type="button" data-cancel-model="${kind}">Cancel</button><button type="submit">Add model</button></div>
+    </form>` : `<button class="add-button" data-add-model="${kind}">${icon("plus")} Add model</button>`}
   </article>`;
 }
 
@@ -312,11 +317,29 @@ function bindEvents() {
     saveAndRender();
   });
   document.querySelectorAll<HTMLButtonElement>("[data-add-model]").forEach(el => el.onclick = () => {
-    const kind = el.dataset.addModel as ModelKind;
-    const name = window.prompt("Model name"); if (!name?.trim()) return;
-    const provider = window.prompt("Provider", "Custom")?.trim() || "Custom";
-    const model = { id: uid(), name: name.trim(), provider, apiKeyPath: "" };
-    if (kind === "prompt") state.promptModels.push(model); else state.imageModels.push(model);
+    addingModel = el.dataset.addModel as ModelKind;
+    render();
+    document.querySelector<HTMLInputElement>(`[data-model-form="${addingModel}"] input[name="name"]`)?.focus();
+  });
+  document.querySelectorAll<HTMLButtonElement>("[data-cancel-model]").forEach(el => el.onclick = () => {
+    addingModel = null;
+    render();
+  });
+  document.querySelectorAll<HTMLFormElement>("[data-model-form]").forEach(el => el.onsubmit = event => {
+    event.preventDefault();
+    const kind = el.dataset.modelForm as ModelKind;
+    const name = (el.elements.namedItem("name") as HTMLInputElement).value.trim();
+    const provider = (el.elements.namedItem("provider") as HTMLInputElement).value.trim();
+    if (!name || !provider) return;
+    const model = { id: uid(), name, provider, apiKeyPath: "" };
+    if (kind === "prompt") {
+      state.promptModels.push(model);
+      state.selectedPromptModel = model.id;
+    } else {
+      state.imageModels.push(model);
+      state.selectedImageModel = model.id;
+    }
+    addingModel = null;
     saveAndRender();
   });
   document.querySelectorAll<HTMLButtonElement>("[data-add-item]").forEach(el => el.onclick = () => {

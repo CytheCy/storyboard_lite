@@ -53,6 +53,9 @@ function requireOpenAIModel(model, kind) {
   }
   const name = cleanModelName(model, kind);
   if (!name) throw new Error(`The selected ${kind} model has no model name.`);
+  if (kind === "prompt" && /^gpt[- ]?image(?:[- ]|\d|$)/i.test(name)) {
+    throw new Error(`${name} generates images and cannot identify scenes. Select it under TTI AI, and choose a text model under Prompt AI.`);
+  }
   return name;
 }
 
@@ -341,17 +344,28 @@ async function runStoryboardPipeline(job, onProgress = () => {}) {
   }
 
   onProgress({ progress: 12, message: "Reading prose and identifying scenes" });
-  const sceneText = await callPromptModel({
-    apiKey: promptKey,
-    model: promptModel,
-    instructions: SCENE_DETECTION_INSTRUCTIONS,
-    input: `Divide this prose into scenes. Character count: ${prose.length}\n\nPROSE:\n${prose}`,
-    maxOutputTokens: 12_000,
-    retryMaxOutputTokens: 32_000,
-    verbosity: "low",
-    label: "Scene detection"
-  });
-  const scenes = parseScenes(sceneText, prose);
+  let scenes;
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    const sceneText = await callPromptModel({
+      apiKey: promptKey,
+      model: promptModel,
+      instructions: `${SCENE_DETECTION_INSTRUCTIONS}\nReturn at least one scene for nonempty prose.`,
+      input: `Divide this prose into scenes. Character count: ${prose.length}\n\nPROSE:\n${prose}`,
+      maxOutputTokens: 12_000,
+      retryMaxOutputTokens: 32_000,
+      verbosity: "low",
+      label: "Scene detection"
+    });
+    try {
+      scenes = parseScenes(sceneText, prose);
+      break;
+    } catch (error) {
+      if (error.message !== "The prompt model returned no scenes." || attempt === 1) {
+        throw new Error(`${error.message} Check that Prompt AI is a text model (currently ${promptModel}).`, { cause: error });
+      }
+      onProgress({ progress: 14, message: "Prompt model returned no scenes; retrying scene detection" });
+    }
+  }
   onProgress({ progress: 18, message: `Found ${scenes.length} scene${scenes.length === 1 ? "" : "s"}` });
 
   const promptResults = [];

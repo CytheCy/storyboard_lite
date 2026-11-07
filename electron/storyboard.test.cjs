@@ -123,6 +123,61 @@ test("generation requires described Environment and Style selections", () => {
   }), /Style description/);
 });
 
+test("an image model selected for Prompt AI fails before making requests", async () => {
+  await assert.rejects(runStoryboardPipeline({
+    prosePath: "/unused/story.md",
+    promptPath: "/unused/prompts",
+    outputPath: "/unused/images",
+    promptModel: { name: "gpt-image-2", provider: "OpenAI" },
+    imageModel: { name: "gpt-image-2", provider: "OpenAI" },
+    environments: [{ title: "Station", description: "White rooms.", enabled: true }],
+    styles: [{ description: "Ink.", enabled: true }]
+  }), /Select it under TTI AI, and choose a text model under Prompt AI/);
+});
+
+test("an empty scene list is retried once", async () => {
+  const testRoot = await fs.mkdtemp(path.join(os.tmpdir(), "frameforge-empty-scenes-"));
+  const prosePath = path.join(testRoot, "story.md");
+  const keyPath = path.join(testRoot, "openai.key");
+  const originalFetch = global.fetch;
+  let sceneRequests = 0;
+  try {
+    await fs.writeFile(prosePath, "Mara enters.");
+    await fs.writeFile(keyPath, "test-api-key");
+    global.fetch = async (url, options) => {
+      const body = JSON.parse(options.body);
+      if (url.includes("/images/generations")) {
+        assert.equal(body.model, "gpt-image-2");
+        return { ok: true, json: async () => ({ data: [{ b64_json: Buffer.from("image").toString("base64") }] }) };
+      }
+      if (body.instructions.startsWith("Find all technology")) {
+        return { ok: true, json: async () => ({ status: "completed", output_text: "No technology found." }) };
+      }
+      if (body.instructions.includes("Divide the supplied prose")) {
+        sceneRequests += 1;
+        return { ok: true, json: async () => ({ status: "completed", output_text: sceneRequests === 1 ? "[]" : JSON.stringify([
+          { scene_number: 1, scene_title: "Arrival", prose_start: 0, prose_end: 12 }
+        ]) }) };
+      }
+      return { ok: true, json: async () => ({ status: "completed", output_text: "SHOT TYPE: Wide shot" }) };
+    };
+    const result = await runStoryboardPipeline({
+      prosePath,
+      promptPath: path.join(testRoot, "prompts"),
+      outputPath: path.join(testRoot, "images"),
+      promptModel: { name: "GPT-5", provider: "OpenAI", apiKeyPath: keyPath },
+      imageModel: { name: "gpt-image-2", provider: "OpenAI", apiKeyPath: keyPath },
+      environments: [{ title: "Station", description: "White rooms.", enabled: true }],
+      styles: [{ description: "Ink.", enabled: true }]
+    });
+    assert.equal(sceneRequests, 2);
+    assert.equal(result.imageFiles.length, 1);
+  } finally {
+    global.fetch = originalFetch;
+    await fs.rm(testRoot, { recursive: true, force: true });
+  }
+});
+
 test("the pipeline sends Environment to AI, then appends Style before saving and rendering", async () => {
   const testRoot = await fs.mkdtemp(path.join(os.tmpdir(), "frameforge-pipeline-"));
   const prosePath = path.join(testRoot, "story.md");
