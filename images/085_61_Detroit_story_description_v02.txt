@@ -1,0 +1,114 @@
+- In a storm-battered underground Detroit, a proud family man unravels as AI, addiction, and a reclusive neighbor’s miracle robot upend everything they believe about work, love, and control. 
+- When electricity is scarce, power becomes currency—and one quiet neighbor’s new robot turns him into the richest, most dangerous man on the block. 
+- A future where kids don’t read, robots do your job, and desire can be chemically hijacked—until one family pays the price. 
+- He mocked his “wacko” neighbor—then watched the man’s AI-built empire start selling power to his own home. 
+- A glittering dust of hidden cameras, a breath of Slip, and a life destroyed—because consent can be hacked. 
+- In Rosewater’s underground terraces, tech promises safety and prosperity—until love loops, jack-casts, and hijack drugs rewrite what “choice” means. 
+- Tray RB can work, earn, and decide for you—freedom for some, quiet tyranny for others. 
+- A son falls in love with his own female P-clone, a daughter is targeted by a new crime, and a mother turns to AI just to survive. 
+- Imagine a city where literacy fades, AI clones teach, and predators broadcast your private life through dust—welcome to Rosewater. 
+- He chased progress; his neighbor lived it—now the robots do the labor, the pipes make the power, and the humes struggle to keep their souls. 
+- One night, one spray, and the colony’s newest crime makes “willing” meaningless. 
+- An intimate, unsettling saga of family, tech, and power: when the future arrives unevenly on your own floor. 
+- An elder warns, “What if the internet goes down?”—but in Detroit’s depths, the real outage is human judgment. 
+- The love story you didn’t expect: a musician and his AI twin—reprogrammed as the woman he thinks he wants. 
+- Thrive promises a better life; what it delivers is a robot that moves like you, decides for you, and quietly replaces you. 
+- A working-class rivalry explodes when one man digs into bedrock for free power—and taps a vein of resentment instead. 
+- From family dinners to emergency stasis beds, this is how a future society fractures under perfect convenience. 
+- You can outsource your chores, your choices, even your face—until your daughter tries to walk back out into a drug that erased her no. 
+- Detroit went underground to survive the storm—now the real disaster is what they brought with them. 
+- A haunting, near-future drama where cameras are dust, consent is chemistry, and the neighbor you dismissed becomes the ghost in every machine.
+
+Technology
+
+- Enviro-suit: A protective outfit worn by several characters, including a hood and sealed collar versions, for harsh environmental conditions.
+- A.R. display/glasses: Augmented reality visual interfaces that float information before the eyes or are worn as glasses.
+- House battery: A large rectangular home power unit that families exchange periodically for electricity.
+- Hauling bots: Small robots used to move heavy items, suggested for transporting the house battery.
+- Hand truck: A manual wheeled tool used to lift and move the house battery.
+- Flatbed fallow cart: A flatbed cart used to transport the house battery outside the residence.
+- Tiny car: A small autono-car used on terrace rings for personal transport and hauling goods.
+- Pallet jack: A manual lifting device Lou uses to hoist his house battery.
+- Freight elevator: A large cargo elevator used to move people and vehicles between levels.
+- AR elements: Visual overlays occupying a user’s field of view while walking.
+- Power generator: A general term Pavel uses referring to personal electricity generation.
+- Curlies (curly power pipe/generators): Flexible tubes installed in rock cavities that harvest temperature fluctuation to generate electricity.
+- Entryway garden/planting bed: Installed garden modules for residence fronts on terrace rings.
+- Assist: An AI assistant that reads text aloud, takes notes, and answers questions through voice or AR.
+- Virtual reality school: An education system where children attend classes in VR.
+- Personality clones (P-clones): AI replicas of individuals that teach, converse, and perform tasks like exams and simulations.
+- Compatible interface: The device or system needed to access VR schooling and P-clones.
+- Network connections: The colony’s data links that can interrupt access to VR programs.
+- Interactive simulations: Educational tools used by P-clones to demonstrate complex subjects.
+- Interactive data environments: Research tools for examining experimental results without traditional reading.
+- Text-to-speech: Technology used by novelists and others to listen to written content.
+- AR Two: A next-generation AR system that helps users perceive spatial features, described as “seeing sounds.”
+- Noise cancellation: A system Pavel can switch off to hear ambient silence.
+- Rod lights: Ceiling-mounted lighting fixtures in the home.
+- Windows with atrium view: Transparent architectural elements providing augmented or literal views into the atrium.
+- P-clone anthropologist: A P-clone specialized in anthropology providing commentary.
+- Longevity forums: Online communities discussing life-extension treatments and data.
+- A.R. display (medical graphs): Overlays showing biometrics and treatment graphs for rat projects.
+- Protein-recycling treatment: A longevity protocol discussed for extending rat lifespan.
+- Partial cellular reprogramming cycles: Timed interventions used in rat longevity experiments.
+- Med bots/medical center robots: Robots that apply treatments, including surgical systems and hume-noids.
+- A.R. nurse avatar: A virtual nurse guiding patients in the medical center.
+- Ventilation system with microbial stand-ins: Air system using substitutes for microbiomes to improve safety.
+- Personality-clone doctor: A medical P-clone providing diagnoses and updates.
+- Emergency circulatory reconstruction: A robotic surgical intervention used during critical care.
+- Surgical robots with sterile enclosure: Robots that deploy a sterile field and perform operations.
+- Display of an ocean flyover: An AR or screen-based calming visual in the waiting area.
+- Tray RB: A Thrive-developed robot for work, household tasks, health monitoring, income earning, and personal care.
+- Thrive AI: A super-intelligent system guiding members on work, resources, health, and life decisions.
+- Hume work physiobiotics database: Thrive’s massive dataset of recorded human movements used to tune Tray RB.
+- Lutin 2: An earlier robot model that requires safe movement mode in unfamiliar environments.
+- Dedicated local rapid mapping hardware: Tray RB’s onboard system for fast mapping and material identification.
+- Personality-clone facial expression set: Thrive-selected expression models driving the Tray RB’s face behavior.
+- Electroactive polymer face with shape-changing material: A soft-appearing but hard surface face that deforms to show expressions.
+- Groceries/supplies delivery by bot: The Tray RB performing shopping and returns.
+- Rodent traps: Devices the robot replaces along the terrace ring to reduce pests.
+- Upcycle market: A place selling repaired or refurbished goods like musical instruments.
+- Virtual jam spaces: Online environments where users improvise music together.
+- Congas/acoustic guitar/keyboard/electric bass: Musical instruments Gregor acquires and plays.
+- Swearve: A strategy game Gregor played against humans and his P-clone.
+- Baking a P-clone: The multi-year training process where life data is recorded to build a personality clone.
+- Virtual drum kit: A simulated percussion setup used during jams.
+- Female-version transformation of P-clone: A configurable change to a P-clone’s anatomy and personality.
+- Freight elevator with portable speakers and disco cubes: The club-bound cargo lift equipped with music and lighting.
+- Animated hair/clothing: Wearables with dynamic visual effects like flowing tiger stripes and length-changing jackets.
+- Prosthetic fingers: Replacement digits that gleam, worn by a partygoer.
+- Excavation equipment history (drilling machines, robots, containers): Heavy machines once moved by the elevator.
+- Security fences: Barriers enclosing the underground club within the canal.
+- Club light systems (strobes, spotlights, colored beams): Lighting technologies used in the underground venue.
+- Porta potties with c-plast doors: Portable restrooms used at the canal club.
+- Bone mount sensor array: A sensor implanted or mounted at the back of the head that detected Slip exposure.
+- Slip: A neuroactive aerosol hijack drug that increases sexual drive and reduces judgment and restraint.
+- Cam Mist: A cloud of dust-sized cameras forming a covert distributed video system.
+- Blind relays: Ubiquitous relay nodes that pass weak device signals to receivers anonymously.
+- Reconstruction software: Software that stitches overlapping micro-camera footage into coherent video.
+- Faraday chamber: A room with walls that scramble radio signals to block transmissions and spying.
+- Tiny car bays with charging connections: Charging stations and docks for small autono-cars.
+- Thrive emergency driving override: System that clears traffic and prioritizes a vehicle’s route in emergencies.
+- Stasis retirement services: Services allowing people to use stasis as part of retirement planning.
+- Pleasure ship in VR: A virtual environment mimicking a classic liner with interactive elements.
+- Lantern fish (virtual): VR creatures illuminating the lake scene.
+- Floating garden spheres (virtual): Miniature VR orbs containing living gardens that can be collected.
+- Musician quartet (virtual): Generated performers in the VR scene.
+- Mining cart with wide treads: An industrial cart used to haul excavated rock from Lou’s residence.
+- Shipping crates with interlocking panels: Crates used to deliver curlies in protective wrapping.
+- Assist blueprint visualization: A 3D AR model showing Rosewater’s infrastructure and Lou’s installation.
+- Canal-boring machine: Enormous cutter with multiple heads used for excavating canals.
+- Thick orange enviro-suit with Brazzo-boots and hearing protectors: Heavy-duty protective gear used near the borer.
+- Hydraulic extraction tool: A tool used to drive out and replace cracked cutting teeth.
+- Communication symbol inside visor: Helmet-integrated comms displaying calls and overlays.
+- Dates Navigator: A Thrive-linked matchmaking app using deep psychology.
+- Thrive membership: A system providing work, guidance, robots like Tray RB, and recommendations.
+- Will hijack detection/Thrive warnings: Real-time alerts identifying Slip exposure and advising actions.
+- Permanent VR stasis: A medical intervention placing a person in continuous VR with body maintained in stasis.
+- Stasis bed: Equipment used to maintain a body in long-term stasis.
+- Refurbished robots as care droids: Repaired robots Pavel buys to assist with daily living.
+- Locker home: A one-room dwelling unit in a deep “Earth scraper.”
+- Earth scraper (Subjunction): A deep structure descending many stories below ground.
+- New caregiver robot with smart-material face: A non-industrial bot with humanlike expressions and caregiver’s hands used by Lou.
+- Remote stasis control of robot body: Lou remotes into the new bot while in stasis to go out.
+- Noise-cancelling home systems: Systems Pavel sometimes turns off to hear silence.

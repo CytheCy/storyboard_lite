@@ -18,3 +18,97 @@
 - What if retirement is a robot with your gait and your grudges—and the bill comes due next door?  
 - She outran the club—and the drug—only to learn the cameras rode home on her skin.  
 - In the world Thrive built, progress is easy; it’s the people who can’t keep up.
+
+Technology
+
+- Enviro-suit: A protective outfit worn outdoors that can include a hood and zipped jacket, shielding wearers from harsh environmental conditions.
+- A.R. display: A translucent augmented reality visual interface floating before the eyes.
+- Little hauling bots: Small autonomous machines used to move heavy items.
+- House battery: A large rectangular power storage unit that supplies a home with electricity and is periodically exchanged.
+- Main switch: A control that disconnects household power.
+- Baseboard emergency lamps: Small lights that come on when main power is cut, illuminating baseboards and doorways.
+- Hand truck: A wheeled lever device used to move heavy loads like the house battery.
+- Flatbed fallow cart: A flat-surfaced cart used to transport heavy items such as batteries.
+- Tiny car: A small two-person or compact autonomous vehicle used for transport on terrace rings and tunnels.
+- Pallet jack: A manual lifting tool used to raise and move heavy pallets or batteries.
+- Freight elevator: A large cargo elevator capable of carrying people and vehicles between levels.
+- AR (augmented reality) elements: Overlaid digital visuals occupying a user’s field of view.
+- Power generator: A device that produces electricity for a residence.
+- Curlies: Flexible tubes forming a temperature-flux power pipe used to generate electricity in deep structures.
+- Assist: An AI helper that reads text aloud, takes notes, and interprets visual selections via eye blinks.
+- Virtual reality school: An education platform conducted in VR environments.
+- Personality clones (P-clones): AI replicas trained on a person's recorded life data to provide individualized instruction or companionship.
+- Compatible interface: Hardware or implants that allow access to VR schools and P-clones.
+- Interactive simulations: Educational environments where complex subjects are demonstrated through user interaction.
+- Interactive data environments: Research tools for examining experimental results through manipulable visual interfaces.
+- Text-to-speech: A system that reads written text aloud.
+- AR Two: An advanced augmented system that helps a user perceive spatial information, reportedly letting sounds aid vision in darkness.
+- Rod lights: Hanging lighting fixtures illuminating rooms from ceilings.
+- Noise cancellation: A system Pavel can switch off to hear environmental silence.
+- Glasses with mirrored lenses: Eyewear with reflective lenses.
+- Entryway garden installations: Home terrace garden systems with planting beds and irrigation.
+- Pet rat cage: A containment enclosure for keeping pet rats.
+- AR display (medical graphs): Augmented visuals showing biometrics like weight, activity, and inflammation.
+- Longevity forums: Online platforms where users share life-extension treatments and data.
+- Protein-recycling treatment: A longevity intervention discussed for improving cellular maintenance in rats.
+- Partial cellular reprogramming cycles: Timed treatments intended to rejuvenate tissues while reducing abnormal growth risk.
+- Stasis retirement services: A system offering extended-life support or suspended aging as a retirement option.
+- Dates Navigator: A matchmaking app using deep psychology to suggest compatible partners.
+- Thrive: An AI system that finds work, optimizes life logistics, plans infrastructure, and offers member services.
+- Tray RB: A Thrive-designed robot that works, earns income, manages household tasks, provides care, and makes executive decisions.
+- Hume work physiobiotics database: A massive dataset of recorded human movements used to tune Tray RB’s mechanics and planning.
+- Lutin 2: An earlier generation robot that must slow down and switch to safe mode in unfamiliar environments.
+- Local rapid mapping hardware: Onboard sensors and processors that let Tray RB build maps at full speed and identify materials inside objects.
+- Personality-clone facial expression set: A set of modeled expressions applied to a robot’s smart-material face according to owner preferences.
+- Electroactive polymer face: Shape-changing facial material that contracts and expands to create lifelike expressions.
+- Blind relays: Ubiquitous network relays that pass weak radio signals without revealing endpoints.
+- Cam Mist: A cloud of dust-sized cameras that collectively reconstruct video of victims by overlapping data.
+- Slip: A neuroactive hijack drug that increases sexual drive while suppressing judgment and restraint.
+- Reconstruction software: Software that combines Cam Mist data into continuous moving images.
+- Anonymous trading groups: Networks that distribute or sell compromising recordings.
+- AR glasses: Wearable augmented reality eyewear Lou uses.
+- Printed undershirt/clothes: Clothing produced by printing rather than traditional manufacturing.
+- Germination jar: A container used for sprouting or starting biological growths.
+- Foldable tow boxes: Collapsible containers Lou stacks for hauling goods.
+- Enviro-jacket: A protective outer layer integrated with an enviro-suit.
+- C-plast: Transparent plastic-like material used as room covering and for portable toilet doors.
+- Terrace-ring industrial cart: A wide-tread, reinforced-walled cart for hauling heavy materials like rock.
+- Filters (large): Replaceable filtration units Lou stacks next to a tiny car.
+- Tow cord: A cord used for pulling or securing loads.
+- Thrive matchmaking (integrated service): Thrive’s system that finds significant others using its data and psychology tools.
+- Stasis (VR stasis, body stasis): A system that suspends bodily functions while allowing continuous virtual life or remote operation.
+- Medical center machines: Hospital equipment including ventilators, tubing, and environmental systems replacing microbiome exposure.
+- Med bots: Medical robots stored in recessed compartments that apply treatments and perform procedures.
+- A.R. nurse avatar: A virtual nurse guiding patients within the medical center.
+- Personality-clone doctor: A doctor avatar delivering diagnoses and updates.
+- Surgical robots: Robots that perform surgery with instrument arms under sterile enclosures.
+- Hume-noid: A humanoid assistant that guides patients.
+- Artificial sunlight lamps: Lighting that simulates sunlight for indoor gardens.
+- Tray RB executive decision-making: The robot’s onboard system enabling it to act autonomously on Thrive’s recommendations.
+- Retirement via productive robot labor: A system where Tray RB provides ongoing labor income instead of savings-based retirement.
+- Industrial mining cart: A heavy-duty cart used for transporting excavated stone.
+- Canal-boring machine: A massive machine with cutting heads used to excavate underground canals.
+- Hydraulic extraction tool: A device for removing and reseating large cutting teeth from machinery.
+- Brazzo-boots: Protective industrial footwear worn with enviro-suits.
+- Communication visor HUD: A display inside a protective visor that shows calls and symbols.
+- Faraday chamber: A room lined with material that scrambles or blocks radio signals to prevent transmissions.
+- Robo snake: A robotic accessory draped like a snake around a person’s shoulders.
+- Portable speakers and disco cubes: Bolt-on audio and lighting devices for events.
+- Elevator safety AI voice: An automated voice that enforces safety guidelines in shared infrastructure.
+- Underground drainage network: A Thrive-planned canal system to carry floodwaters to deep reservoirs.
+- Security fences: Barriers enclosing the club area within the canal.
+- Porta potties with AR glow lights: Portable toilets with illuminated dispensers and vents, seen with AR guidance.
+- Bone mount sensor array: A sensor implant or mount at the back of Bettina’s head that detects airborne drugs.
+- Thrive emergency driving: An automated routing and priority-clearing system that reroutes autono-cars during emergencies.
+- Autono-cars: Autonomous tiny cars managed by networked control.
+- Charging bays: Stations where tiny cars connect to recharge.
+- Virtual jam spaces: Online environments where musicians improvise together.
+- P-clone baking: The long-term process of training a personality clone on recorded life data.
+- Swearve: A strategy game Gregor played with others and his P-clone.
+- Virtual drum kit and instruments: Simulated musical instruments used within VR sessions.
+- Permanent VR stasis bed: A bed and system that keep a person’s body in stasis while their mind remains in virtual reality.
+- Locker home: A one-room dwelling within a deep “Earth scraper” building.
+- Earth scraper: A large structure extending deep underground with many levels.
+- Care droids: Refurbished robots used by Pavel to assist with daily living.
+- New caregiver robot with smart face: A non-industrial bot wearing human clothes, with expressive smart-material face and caregiver-grade hands.
+- Entry-level garden planting bed and irrigation tubes: Home horticulture installations with planting fabric, soil, and tubes.
