@@ -73,6 +73,58 @@ test("story descriptions use an isolated request and preserve existing descripti
   }
 });
 
+test("elevator pitch uses its own prose request and shares the story text file", async () => {
+  const testRoot = await fs.mkdtemp(path.join(os.tmpdir(), "frameforge-elevator-pitch-"));
+  const prosePath = path.join(testRoot, "story.md");
+  const keyPath = path.join(testRoot, "test.key");
+  const prose = "Mara enters the station.";
+  const originalFetch = global.fetch;
+  const requests = [];
+  try {
+    await fs.writeFile(prosePath, prose);
+    await fs.writeFile(keyPath, "test-key");
+    global.fetch = async (url, options) => {
+      const body = JSON.parse(options.body);
+      requests.push(body);
+      const responses = [
+        { output_text: "A traveler arrives." },
+        { output_text: "A discovery changes everything." },
+        { output_text: "- Station: A constructed facility." },
+        { output_text: JSON.stringify([{ scene_number: 1, scene_title: "Arrival", prose_start: 0, prose_end: prose.length }]) },
+        { output_text: "SHOT TYPE: Wide shot" },
+        { data: [{ b64_json: Buffer.from("image").toString("base64") }] }
+      ];
+      assert.ok(responses[requests.length - 1], "No unexpected extra request");
+      return { ok: true, json: async () => ({ status: "completed", ...responses[requests.length - 1] }) };
+    };
+    const result = await runStoryboardPipeline({
+      prosePath,
+      outputPath: path.join(testRoot, "images"),
+      promptPath: path.join(testRoot, "prompts"),
+      storyDescriptionPrompt: "Write a description.",
+      elevatorPitchPrompt: "Write an elevator pitch.",
+      promptModel: { name: "GPT-5", provider: "OpenAI", apiKeyPath: keyPath },
+      imageModel: { name: "GPT Image 1", provider: "OpenAI", apiKeyPath: keyPath },
+      environments: [{ title: "Station", description: "White rooms", enabled: true }],
+      styles: [{ description: "Ink outlines", enabled: true }]
+    });
+    assert.equal(requests.length, 6);
+    assert.equal(requests[0].instructions, "Write a description.");
+    assert.equal(requests[1].instructions, "Write an elevator pitch.");
+    assert.equal(requests[1].input, `PROSE:\n${prose}`);
+    assert.equal(requests[1].previous_response_id, undefined);
+    for (const request of requests.slice(2)) {
+      assert.ok(!JSON.stringify(request).includes("Write an elevator pitch."));
+      assert.ok(!JSON.stringify(request).includes("A discovery changes everything."));
+    }
+    assert.equal(await fs.readFile(result.storyDescriptionFile, "utf8"),
+      "A traveler arrives.\n\nElevator Pitch\n\nA discovery changes everything.\n\nTechnology\n\n- Station: A constructed facility.\n");
+  } finally {
+    global.fetch = originalFetch;
+    await fs.rm(testRoot, { recursive: true, force: true });
+  }
+});
+
 test("every prompt-writer input contains the active Environment", () => {
   const input = buildImagePromptInput({
     title: "Arrival",

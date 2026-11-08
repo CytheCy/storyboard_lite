@@ -316,6 +316,36 @@ async function runStoryboardPipeline(job, onProgress = () => {}) {
     }
   }
 
+  if (job.elevatorPitchPrompt?.trim()) {
+    onProgress({ progress: 10, message: "Writing elevator pitch" });
+    let elevatorPitch;
+    try {
+      elevatorPitch = await callPromptModel({
+        apiKey: promptKey,
+        model: promptModel,
+        instructions: job.elevatorPitchPrompt,
+        input: `PROSE:\n${prose}`,
+        maxOutputTokens: 6_000,
+        retryMaxOutputTokens: 12_000,
+        label: "Elevator pitch"
+      });
+    } catch (error) {
+      if (!isSafetyRejection(error)) throw error;
+      skippedSteps.push({ stage: "elevator pitch", reason: error.message });
+      onProgress({ progress: 10, message: "Skipped rejected elevator pitch" });
+    }
+    if (elevatorPitch) {
+      const pitchSection = `Elevator Pitch\n\n${elevatorPitch}\n`;
+      if (storyDescriptionFile) {
+        await fs.appendFile(storyDescriptionFile, `\n${pitchSection}`, "utf8");
+      } else {
+        storyDescriptionFile = await availablePath(job.outputPath, `${sourceStem}_story_description.txt`);
+        await fs.writeFile(storyDescriptionFile, pitchSection, "utf8");
+      }
+      onProgress({ progress: 10, message: "Saved elevator pitch" });
+    }
+  }
+
   onProgress({ progress: 11, message: "Identifying technology in the prose" });
   let technology;
   try {

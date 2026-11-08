@@ -27,6 +27,7 @@ interface Window {
       outputPath: string;
       promptPath: string;
       storyDescriptionPrompt: string;
+      elevatorPitchPrompt: string;
       imageFormat: "1:1" | "9:16" | "16:9";
       promptModel: { name: string; provider: string; apiKeyPath: string };
       imageModel: { name: string; provider: string; apiKeyPath: string };
@@ -38,7 +39,7 @@ interface Window {
       imageFiles: string[];
       storyDescriptionFile: string | null;
       skippedScenes: Array<{ sceneNumber: number; stage: "prompt" | "image"; reason: string }>;
-      skippedSteps: Array<{ stage: "story description" | "technology list"; reason: string }>;
+      skippedSteps: Array<{ stage: "story description" | "elevator pitch" | "technology list"; reason: string }>;
     }>;
     onProgress(callback: (update: { progress: number; message: string }) => void): () => void;
   };

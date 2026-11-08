@@ -17,6 +17,7 @@ type AppState = {
   outputPath: string;
   promptPath: string;
   storyDescriptionPrompt: string;
+  elevatorPitchPrompt: string;
   promptModels: Model[];
   imageModels: Model[];
   selectedPromptModel: string;
@@ -49,6 +50,7 @@ const initialState: AppState = {
   outputPath: "",
   promptPath: "",
   storyDescriptionPrompt: "",
+  elevatorPitchPrompt: "",
   promptModels: [
     { id: uid(), name: "GPT-5", provider: "OpenAI", apiKeyPath: "" },
     { id: uid(), name: "Claude Sonnet", provider: "Anthropic", apiKeyPath: "" }
@@ -134,10 +136,14 @@ function renderPage() {
 
 function renderStoryDescription() {
   return `<div class="page story-description-page">
-    <section class="page-intro"><h2>Story Description</h2><p>Paste the instructions you want the selected Prompt AI to use with your prose file. When you make storyboards, a separate request creates the description and saves it as a .txt file in the storyboard folder. Another separate request lists all technology in the prose with a one-sentence description of each item, saved after the story description. Leave this blank to generate only the technology list.</p></section>
+    <section class="page-intro"><h2>Story Description</h2><p>Enter instructions for the selected Prompt AI to use with your prose file. The story description and elevator pitch each use a separate request when their prompts are filled in. Their results and the separate technology list are saved in one .txt file in the storyboard folder. Either prompt can be left blank.</p></section>
     <section class="panel story-description-panel">
       <label class="textarea-label" for="story-description-prompt">Story description prompt</label>
       <textarea id="story-description-prompt" placeholder="Paste your story description prompt here…" spellcheck="true">${escapeHtml(state.storyDescriptionPrompt)}</textarea>
+    </section>
+    <section class="panel story-description-panel">
+      <label class="textarea-label" for="elevator-pitch-prompt">Elivator Pitch Prompt</label>
+      <textarea id="elevator-pitch-prompt" placeholder="Paste your elevator pitch prompt here…" spellcheck="true">${escapeHtml(state.elevatorPitchPrompt)}</textarea>
     </section>
   </div>`;
 }
@@ -290,6 +296,11 @@ function bindEvents() {
   const descriptionPrompt = document.querySelector<HTMLTextAreaElement>("#story-description-prompt");
   if (descriptionPrompt) descriptionPrompt.oninput = () => {
     state.storyDescriptionPrompt = descriptionPrompt.value;
+    persist();
+  };
+  const elevatorPitchPrompt = document.querySelector<HTMLTextAreaElement>("#elevator-pitch-prompt");
+  if (elevatorPitchPrompt) elevatorPitchPrompt.oninput = () => {
+    state.elevatorPitchPrompt = elevatorPitchPrompt.value;
     persist();
   };
   document.querySelectorAll<HTMLElement>("[data-tab]").forEach(el => el.onclick = () => { state.activeTab = el.dataset.tab as Tab; saveAndRender(); });
@@ -459,6 +470,7 @@ async function runStoryboard() {
       outputPath: state.outputPath,
       promptPath: state.promptPath,
       storyDescriptionPrompt: state.storyDescriptionPrompt,
+      elevatorPitchPrompt: state.elevatorPitchPrompt,
       imageFormat: state.imageFormat,
       promptModel,
       imageModel,
