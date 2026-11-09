@@ -26,12 +26,14 @@ type AppState = {
   styles: LibraryItem[];
 };
 
-const icon = (name: "file" | "folder" | "plus" | "trash" | "spark" | "check" | "chevron" | "play" | "save") => {
+const icon = (name: "file" | "folder" | "plus" | "trash" | "edit" | "up" | "spark" | "check" | "chevron" | "play" | "save") => {
   const paths = {
     file: '<path d="M14 2H6a2 2 0 0 0-2 2v16h16V8z"/><path d="M14 2v6h6M8 13h8M8 17h5"/>',
     folder: '<path d="M3 6a2 2 0 0 1 2-2h5l2 2h7a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>',
     plus: '<path d="M12 5v14M5 12h14"/>',
     trash: '<path d="M4 7h16M9 7V4h6v3M7 7l1 13h8l1-13M10 11v5M14 11v5"/>',
+    edit: '<path d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L9 17l-4 1 1-4z"/>',
+    up: '<path d="m12 19 0-14m-6 6 6-6 6 6"/>',
     spark: '<path d="m12 3 1.2 3.8L17 8l-3.8 1.2L12 13l-1.2-3.8L7 8l3.8-1.2zM18.5 14l.7 2.3 2.3.7-2.3.7-.7 2.3-.7-2.3-2.3-.7 2.3-.7zM5 14l.7 1.8L8 17l-2.3.8L5 20l-.7-2.2L2 17l2.3-1.2z"/>',
     check: '<path d="m5 12 4 4L19 6"/>',
     chevron: '<path d="m9 18 6-6-6-6"/>',
@@ -98,6 +100,7 @@ let eventMessage = "Ready to begin";
 let eventTime = "";
 let completionAudioContext: AudioContext | null = null;
 let addingModel: ModelKind | null = null;
+let editingModel: { kind: ModelKind; id: string } | null = null;
 
 const app = document.querySelector<HTMLDivElement>("#app")!;
 const persist = () => localStorage.setItem("frameforge-state", JSON.stringify(state));
@@ -191,12 +194,18 @@ function renderModelPanel(kind: ModelKind, models: Model[], selected: string) {
   return `<article class="panel model-panel">
     <h2 class="model-panel-label">${kind === "image" ? "TTI AI" : "Prompt AI"}</h2>
     <div class="model-list">
-      ${models.map(model => `<div class="model-row ${selected === model.id ? "selected" : ""}">
+      ${models.map((model, index) => `<div class="model-row ${selected === model.id ? "selected" : ""}">
         <button class="model-choice" role="radio" aria-checked="${selected === model.id}" data-select-model="${model.id}" data-kind="${kind}">
           <span class="checkbox">${selected === model.id ? icon("check") : ""}</span>
           <span><strong>${escapeHtml(model.name)}</strong><small>${escapeHtml(model.provider)}</small></span>
         </button>
         <div class="key-path"><span>${model.apiKeyPath ? escapeHtml(model.apiKeyPath) : "API key file not set"}</span><button title="Choose API key file" data-key-model="${model.id}" data-kind="${kind}">${icon("file")}</button></div>
+        <button class="model-edit-button" type="button" title="Edit ${escapeHtml(model.name)}" aria-label="Edit ${escapeHtml(model.name)}" aria-expanded="${editingModel?.kind === kind && editingModel.id === model.id}" data-edit-model="${model.id}" data-kind="${kind}">${icon("edit")}</button>
+        ${editingModel?.kind === kind && editingModel.id === model.id ? `<form class="edit-model-form" data-edit-model-form="${model.id}" data-kind="${kind}">
+          <label>Model name<input name="name" required value="${escapeHtml(model.name)}" autocomplete="off" /></label>
+          <label>Provider<input name="provider" required value="${escapeHtml(model.provider)}" autocomplete="off" /></label>
+          <div class="edit-model-actions"><div><button class="remove-model-button" type="button" data-delete-model="${model.id}" data-kind="${kind}">${icon("trash")} Delete model</button><button class="move-model-button" type="button" data-move-model-top="${model.id}" data-kind="${kind}" ${index === 0 ? "disabled" : ""}>${icon("up")} Move to top</button></div><div><button type="button" data-cancel-edit-model>Cancel</button><button type="submit">Save changes</button></div></div>
+        </form>` : ""}
       </div>`).join("")}
     </div>
     ${addingModel === kind ? `<form class="add-model-form" data-model-form="${kind}">
@@ -325,6 +334,49 @@ function bindEvents() {
     const result = await choosePath(false); if (!result) return;
     const models = el.dataset.kind === "prompt" ? state.promptModels : state.imageModels;
     const model = models.find(m => m.id === el.dataset.keyModel); if (model) model.apiKeyPath = result;
+    saveAndRender();
+  });
+  document.querySelectorAll<HTMLButtonElement>("[data-edit-model]").forEach(el => el.onclick = () => {
+    const kind = el.dataset.kind as ModelKind;
+    const id = el.dataset.editModel!;
+    editingModel = editingModel?.kind === kind && editingModel.id === id ? null : { kind, id };
+    render();
+    if (editingModel) document.querySelector<HTMLInputElement>(`[data-edit-model-form="${id}"] input[name="name"]`)?.focus();
+  });
+  document.querySelectorAll<HTMLButtonElement>("[data-cancel-edit-model]").forEach(el => el.onclick = () => {
+    editingModel = null;
+    render();
+  });
+  document.querySelectorAll<HTMLFormElement>("[data-edit-model-form]").forEach(el => el.onsubmit = event => {
+    event.preventDefault();
+    const models = el.dataset.kind === "prompt" ? state.promptModels : state.imageModels;
+    const model = models.find(item => item.id === el.dataset.editModelForm);
+    if (!model) return;
+    const name = (el.elements.namedItem("name") as HTMLInputElement).value.trim();
+    const provider = (el.elements.namedItem("provider") as HTMLInputElement).value.trim();
+    if (!name || !provider) return;
+    model.name = name;
+    model.provider = provider;
+    editingModel = null;
+    saveAndRender();
+  });
+  document.querySelectorAll<HTMLButtonElement>("[data-delete-model]").forEach(el => el.onclick = () => {
+    const kind = el.dataset.kind as ModelKind;
+    const models = kind === "prompt" ? state.promptModels : state.imageModels;
+    const index = models.findIndex(model => model.id === el.dataset.deleteModel);
+    if (index < 0) return;
+    const [removed] = models.splice(index, 1);
+    if (kind === "prompt" && state.selectedPromptModel === removed.id) state.selectedPromptModel = models[0]?.id ?? "";
+    if (kind === "image" && state.selectedImageModel === removed.id) state.selectedImageModel = models[0]?.id ?? "";
+    editingModel = null;
+    saveAndRender();
+  });
+  document.querySelectorAll<HTMLButtonElement>("[data-move-model-top]").forEach(el => el.onclick = () => {
+    const models = el.dataset.kind === "prompt" ? state.promptModels : state.imageModels;
+    const index = models.findIndex(model => model.id === el.dataset.moveModelTop);
+    if (index <= 0) return;
+    models.unshift(...models.splice(index, 1));
+    editingModel = null;
     saveAndRender();
   });
   document.querySelectorAll<HTMLButtonElement>("[data-add-model]").forEach(el => el.onclick = () => {
