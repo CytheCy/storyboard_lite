@@ -14,10 +14,26 @@ with no heading or commentary. If none is found, return "No technology found."`;
 const SCENE_DETECTION_INSTRUCTIONS = `
 You are a professional story analyst and storyboard supervisor.
 
-Divide the supplied prose into discrete visual scenes. Begin a new scene for a
-meaningful time shift, location change, subject or point-of-view shift, or a hard
-change in tone. Keep continuous action in the same place together. Explicitly
-list every character physically present in each scene.
+Divide the supplied prose into discrete visual scenes. Begin a new scene when
+one or more of these changes occur:
+
+TIME SHIFTS: An explicit marker such as "an hour later", "the next morning",
+"three weeks earlier", "at dawn", or "by nightfall"; or a significant gap in
+narrative time implied between paragraphs.
+
+LOCATION CHANGES: A character moves to another physical space, such as the next
+room, outside, across the city, aboard a ship, or back to headquarters; or the
+camera-equivalent cuts to a new establishing shot.
+
+SUBJECT OR POINT-OF-VIEW SHIFTS: The central character or group changes, a new
+point-of-view character takes over, or a flashback or flash-forward begins or ends.
+
+MOOD OR TONE BREAKS: A hard shift from action to quiet reflection, threat to calm,
+or interior to exterior; or a chapter or section break in the source text.
+
+Do not split mid-action while the same subject remains in the same space. Keep
+each scene as one coherent visual unit with an establishing-shot concept. Number
+scenes starting at 1 and explicitly list every character physically present.
 
 Return only a JSON array. Do not repeat the prose. Each item must contain:
 scene_number, scene_title, location, time, characters, prose_start, and prose_end.
