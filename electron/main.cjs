@@ -1,6 +1,7 @@
 const { app, BrowserWindow, dialog, ipcMain, shell } = require("electron");
 const path = require("node:path");
 const { runStoryboardPipeline } = require("./storyboard.cjs");
+const projectState = require("./project-state.cjs");
 
 const isDevelopment = process.argv.includes("--dev");
 
@@ -52,6 +53,9 @@ ipcMain.handle("storyboard:run", async (event, job) => {
     if (!event.sender.isDestroyed()) event.sender.send("storyboard:progress", update);
   });
 });
+
+ipcMain.handle("project:load", (_event, folder) => projectState.loadProject(folder));
+ipcMain.handle("project:save", (_event, folder, state) => projectState.saveProject(folder, state));
 
 app.whenReady().then(() => {
   createWindow();

@@ -22,6 +22,8 @@ declare module "*.dic?raw" {
 interface Window {
   frameforge?: {
     openPath(options: { directory: boolean; proseOnly: boolean }): Promise<string | null>;
+    loadProject(folder: string): Promise<Record<string, unknown> | null>;
+    saveProject(folder: string, state: object): Promise<string>;
     runStoryboard(job: {
       prosePath: string;
       outputPath: string;

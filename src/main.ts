@@ -16,6 +16,7 @@ type AppState = {
   prosePath: string;
   outputPath: string;
   promptPath: string;
+  dataPath: string;
   storyDescriptionPrompt: string;
   elevatorPitchPrompt: string;
   promptModels: Model[];
@@ -51,6 +52,7 @@ const initialState: AppState = {
   prosePath: "",
   outputPath: "",
   promptPath: "",
+  dataPath: "",
   storyDescriptionPrompt: "",
   elevatorPitchPrompt: "",
   promptModels: [
@@ -167,6 +169,9 @@ function renderSettings() {
         ${pathField("prosePath", "Prose file", "Select a .txt or .md file", "file", "file")}
         ${pathField("outputPath", "Storyboard folder", "Choose where generated images will be saved", "folder", "directory")}
         ${pathField("promptPath", "Prompt folder", "Choose where generated prompts will be saved", "folder", "directory")}
+        ${pathField("dataPath", "Project data folder", "Choose where settings, prompts, and models will be saved", "folder", "directory")}
+        <p class="data-folder-note">Save writes frameforge-project.json here. Use Load saved project to restore it.</p>
+        <button class="load-project-button" type="button" ${state.dataPath ? "" : "disabled"}>Load saved project</button>
         ${renderImageFormat()}
       </article>
       ${renderModelPanel("prompt", state.promptModels, state.selectedPromptModel)}
@@ -175,7 +180,7 @@ function renderSettings() {
   </div>`;
 }
 
-function pathField(key: "prosePath" | "outputPath" | "promptPath", label: string, placeholder: string, type: "file" | "folder", picker: "file" | "directory") {
+function pathField(key: "prosePath" | "outputPath" | "promptPath" | "dataPath", label: string, placeholder: string, type: "file" | "folder", picker: "file" | "directory") {
   const value = state[key];
   return `<div class="field path-field"><label>${label}</label><div class="path-control ${value ? "has-value" : ""}"><span class="path-icon">${icon(type)}</span><span class="path-value">${value ? escapeHtml(value) : placeholder}</span><button class="browse" data-pick="${picker}" data-target="${key}">Browse</button></div></div>`;
 }
@@ -258,7 +263,7 @@ function renderLibraryItem(type: "environment" | "style", item: LibraryItem, ind
 
 function renderFooter() {
   return `<footer class="footer">
-    <div class="event-block"><span class="event-label">Latest event</span><p><i class="event-dot ${isRunning ? "working" : ""}"></i>${eventMessage}</p>${eventTime ? `<time>${eventTime}</time>` : ""}</div>
+    <div class="event-block"><span class="event-label">Latest event</span><p><i class="event-dot ${isRunning ? "working" : ""}"></i>${escapeHtml(eventMessage)}</p>${eventTime ? `<time>${eventTime}</time>` : ""}</div>
     <div class="progress-block"><div class="progress-copy"><span>Overall progress</span><strong>${progress}%</strong></div><div class="progress-track"><span style="width:${progress}%"></span></div></div>
     <div class="footer-actions">
       <button class="save-button" ${isRunning ? "disabled" : ""}>${icon("save")} Save</button>
@@ -325,6 +330,7 @@ function bindEvents() {
     const result = await choosePath(el.dataset.pick === "directory", el.dataset.target === "prosePath");
     if (result) { (state as unknown as Record<string, string>)[el.dataset.target!] = result; saveAndRender(); }
   });
+  document.querySelector<HTMLButtonElement>(".load-project-button")?.addEventListener("click", () => { void loadProjectFromFolder(state.dataPath); });
   document.querySelectorAll<HTMLButtonElement>("[data-select-model]").forEach(el => el.onclick = () => {
     if (el.dataset.kind === "prompt") state.selectedPromptModel = el.dataset.selectModel!;
     else state.selectedImageModel = el.dataset.selectModel!;
@@ -454,11 +460,42 @@ function bindEvents() {
   document.querySelector<HTMLButtonElement>(".save-button")!.onclick = saveProject;
 }
 
-function saveProject() {
-  persist();
-  eventMessage = "Project settings saved";
+function showEvent(message: string) {
+  eventMessage = message;
   eventTime = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   render();
+}
+
+async function loadProjectFromFolder(folder: string) {
+  if (!window.frameforge) { showEvent("Loading a project folder is available in the Electron app"); return; }
+  try {
+    const loaded = await window.frameforge.loadProject(folder);
+    if (!loaded) { showEvent("No frameforge-project.json file found in that folder"); return; }
+    state = { ...initialState, ...loaded, dataPath: folder } as AppState;
+    editingModel = null;
+    addingModel = null;
+    persist();
+    showEvent("Project loaded from folder");
+  } catch (error) {
+    showEvent(`Could not load project: ${error instanceof Error ? error.message : String(error)}`);
+  }
+}
+
+async function saveProject() {
+  persist();
+  if (!window.frameforge) { showEvent("Saving to a folder is available in the Electron app"); return; }
+  if (!state.dataPath) {
+    const folder = await choosePath(true);
+    if (!folder) return;
+    state.dataPath = folder;
+    persist();
+  }
+  try {
+    await window.frameforge.saveProject(state.dataPath, state);
+    showEvent("Settings, prompts, and models saved to project folder");
+  } catch (error) {
+    showEvent(`Could not save project: ${error instanceof Error ? error.message : String(error)}`);
+  }
 }
 
 function prepareCompletionAudio() {

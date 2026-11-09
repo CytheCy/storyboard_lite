@@ -10,7 +10,7 @@
     "dev:electron": "wait-on http://127.0.0.1:1420 && electron . --dev",
     "start": "npm run build && electron .",
     "build": "tsc && vite build",
-    "test": "node --test electron/storyboard.test.cjs",
+    "test": "node --test electron/*.test.cjs",
     "preview": "vite preview"
   },
   "dependencies": {

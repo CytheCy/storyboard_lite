@@ -15,7 +15,13 @@ For a production-mode launch:
 npm start
 ```
 
-Project choices are saved locally as you edit. **Make storyboards** detects scenes,
+Project choices are saved locally as you edit. Choose a **Project data folder** in Settings
+and click **Save** to write settings, story description prompts, environments, styles,
+and model choices to `frameforge-project.json` in that folder. Use **Load saved project**
+to restore a saved file. API key file
+paths are saved, but the keys themselves are not copied into the project file.
+
+**Make storyboards** detects scenes,
 writes one prompt per scene with the active Environment, appends every active
 Style description to the finished AI prompt, saves the prompts, and generates the
 storyboard images.
